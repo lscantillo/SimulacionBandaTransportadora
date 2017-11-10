@@ -1,0 +1,370 @@
+MPASM  5.51                         BANDA.ASM   11-7-2017  9:56:28         PAGE  1
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+                      00001 ; **** Encabezado ****
+Warning[205]: Found directive in column 1. (list)
+                      00002 list p=16F84a
+                      00003 #include P16F84a.inc
+                      00001         LIST
+                      00002 
+                      00003 ;==========================================================================
+                      00004 ;  MPASM PIC16F84A processor include
+                      00005 ; 
+                      00006 ;  (c) Copyright 1999-2013 Microchip Technology, All rights reserved
+                      00007 ;==========================================================================
+                      00008 
+                      00208         LIST
+Warning[205]: Found directive in column 1. (__CONFIG)
+2007   3FF3           00004 __CONFIG _CP_OFF & _WDT_OFF & _PWRTE_ON & _RC_OSC
+                      00005 
+                      00006 ;**** Definicion de variables ****
+  0000000C            00007 Contador1 equ 0x0C ; Seleccionamos posicionoria RAM (GPR) para guardar
+  0000000D            00008 Contador2 equ 0x0D ; Registro utilizado en demora.-
+  00000000            00009 Led equ 0 ; Definimos Led como el bit cero de un registro,caso PORTB.-
+  00000000            00010 Pulsador1 equ 0 ; Definimos Pulsador como el bit 0, este será para PORTA S1
+  00000001            00011 Pulsador2 equ 1 ; Definimos Pulsador como el bit 1, este será para PORTA S2
+  00000002            00012 Pulsador3 equ 2 ; Definimos Pulsador como el bit 2, este será para PORTA Start
+  00000003            00013 Pulsador4 equ 3 ; Definimos Pulsador como el bit 3, este será para PORTA Stop
+  00000004            00014 Pulsador5 equ 4 ; Definimos Pulsador como el bit 4, este será para PORTA Emergencia
+                      00015 
+                      00016 ;**** Configuracion de puertos ***
+0000                  00017 Reset org 0x00 ; Aqui comienza el micro.-
+Warning[203]: Found opcode in column 1. (goto)
+0000   2805           00018 goto Start ; Salto a inicio de mi programa.-
+Warning[205]: Found directive in column 1. (org)
+0005                  00019 org 0x05 ; Origen del codigo de programa.-
+0005   1905           00020 Start  btfsc PORTA,Pulsador3 ; Preguntamos si esta en 0 logico.-
+0006   2808           00021            goto Inicio 
+0007   2805           00022            goto Start
+0008   1683           00023 Inicio bsf STATUS,RP0 ; Pasamos de Banco 0 a Banco 1.-
+Warning[203]: Found opcode in column 1. (movlw)
+0009   301F           00024 movlw b'11111' ; Muevo 11111 a W.-
+Warning[203]: Found opcode in column 1. (movwf)
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000A   0085           00025 movwf TRISA ; Cargo en TRISA.-
+Warning[203]: Found opcode in column 1. (movlw)
+000B   3010           00026 movlw b'00010000' 
+Warning[203]: Found opcode in column 1. (movwf)
+Message[302]: Register in operand not in bank 0.  Ensure that bank bits are correct.
+000C   0086           00027 movwf TRISB
+Warning[203]: Found opcode in column 1. (bcf)
+000D   1283           00028 bcf STATUS,RP0 ; Paso del Banco 1 al Banco 0
+Warning[203]: Found opcode in column 1. (bcf)
+000E   1006           00029 bcf PORTB,Led ; Comienza apagado.-
+                      00030 
+                      00031 ;**** Secuencia de Led ****
+000F   1805           00032 Bucle1 btfsc PORTA,Pulsador1 ; Preguntamos si esta en 0 logico.-
+MPASM  5.51                         BANDA.ASM   11-7-2017  9:56:28         PAGE  2
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0010   2812           00033            goto Secuencia1 
+0011   280F           00034            goto Bucle1
+                      00035         ;bcf PORTB,Led ; Apagamos Led
+                      00036                 
+0012   1985           00037 Secuencia1  btfsc PORTA,Pulsador4 ; Preguntamos si esta en 0 logico.-
+0013   205F           00038                         call  stop
+0014   1A05           00039                         btfsc PORTA,Pulsador5 ; Preguntamos si esta en 0 logico.-
+0015   2062           00040                         call  emergencia
+0016   3021           00041             movlw b'00100001' 
+0017   0086           00042                         movwf PORTB
+0018   2056           00043                         call Demora_150ms ; Mantenemos prendido 150 milisegundos
+0019   1985           00044                         btfsc PORTA,Pulsador4 ; Preguntamos si esta en 0 logico.-
+001A   205F           00045                         call  stop
+001B   1A05           00046             btfsc PORTA,Pulsador5 ; Preguntamos si esta en 0 logico.-
+001C   2062           00047                         call  emergencia
+001D   3023           00048                         movlw b'00100011' 
+001E   0086           00049                         movwf PORTB
+001F   2056           00050                         call Demora_150ms ; Mantenemos prendido 150 milisegundos
+0020   1985           00051                         btfsc PORTA,Pulsador4 ; Preguntamos si esta en 0 logico.-
+0021   205F           00052                         call  stop
+0022   1A05           00053             btfsc PORTA,Pulsador5 ; Preguntamos si esta en 0 logico.-
+0023   2062           00054                         call  emergencia
+0024   3027           00055                         movlw b'00100111' 
+0025   0086           00056                         movwf PORTB
+0026   2056           00057                         call Demora_150ms ; Mantenemos prendido 150 milisegundos
+0027   1985           00058                         btfsc PORTA,Pulsador4 ; Preguntamos si esta en 0 logico.-
+0028   205F           00059                         call  stop
+0029   1A05           00060             btfsc PORTA,Pulsador5 ; Preguntamos si esta en 0 logico.-
+002A   2062           00061                         call  emergencia
+002B   282F           00062                         goto Bucle2
+                      00063 
+                      00064 ; *********aqui puede copiar y pegar la secuencia de Led que quiera programar
+                      00065 ;********* con el mismo formato del codigo de las lineas anteriores *****
+                      00066 
+Warning[203]: Found opcode in column 1. (goto)
+002C   280F           00067 goto Bucle1 ; permanecemos en un bucle infinito
+                      00068 
+002D   1006           00069 Apagar1 bcf PORTB,Led ;Apagamos Led.-
+Warning[203]: Found opcode in column 1. (goto)
+002E   282F           00070 goto Bucle2 ; Regresamos al bucle
+                      00071 
+002F   1885           00072 Bucle2 btfsc PORTA,Pulsador2 ; Preguntamos si esta en 0 logico.-
+0030   2832           00073            goto Secuencia2 
+0031   282F           00074            goto Bucle2
+                      00075         ;bcf PORTB,Led ; Apagamos Led
+                      00076                 
+0032   1985           00077 Secuencia2  btfsc PORTA,Pulsador4 ; Preguntamos si esta en 0 logico.-
+0033   205F           00078                         call  stop
+0034   1A05           00079             btfsc PORTA,Pulsador5 ; Preguntamos si esta en 0 logico.-
+0035   2062           00080                         call  emergencia
+0036   3027           00081             movlw b'00100111' 
+0037   0086           00082                         movwf PORTB
+0038   2056           00083                         call Demora_150ms ; Mantenemos prendido 150 milisegundos
+MPASM  5.51                         BANDA.ASM   11-7-2017  9:56:28         PAGE  3
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+0039   1985           00084                         btfsc PORTA,Pulsador4 ; Preguntamos si esta en 0 logico.-
+003A   205F           00085                         call  stop
+003B   1A05           00086                         btfsc PORTA,Pulsador5 ; Preguntamos si esta en 0 logico.-
+003C   2062           00087                         call  emergencia
+003D   3023           00088                         movlw b'00100011' 
+003E   0086           00089                         movwf PORTB
+003F   2056           00090                         call Demora_150ms ; Mantenemos prendido 150 milisegundos
+0040   1985           00091                         btfsc PORTA,Pulsador4 ; Preguntamos si esta en 0 logico.-
+0041   205F           00092                         call  stop
+0042   1A05           00093             btfsc PORTA,Pulsador5 ; Preguntamos si esta en 0 logico.-
+0043   2062           00094                         call  emergencia
+0044   3021           00095                         movlw b'00100001' 
+0045   0086           00096                         movwf PORTB
+0046   2056           00097                         call Demora_150ms ; Mantenemos prendido 150 milisegundos
+0047   1985           00098                         btfsc PORTA,Pulsador4 ; Preguntamos si esta en 0 logico.-
+0048   205F           00099                         call  stop
+0049   1A05           00100             btfsc PORTA,Pulsador5 ; Preguntamos si esta en 0 logico.-
+004A   2062           00101                         call  emergencia
+004B   3020           00102                         movlw b'00100000' 
+004C   0086           00103                         movwf PORTB
+004D   2056           00104                         call Demora_150ms ; Mantenemos prendido 150 milisegundos
+004E   1985           00105                         btfsc PORTA,Pulsador4 ; Preguntamos si esta en 0 logico.-
+004F   205F           00106                         call  stop
+0050   1A05           00107             btfsc PORTA,Pulsador5 ; Preguntamos si esta en 0 logico.-
+0051   2062           00108                         call  emergencia
+                      00109                         ;return
+0052   280F           00110                         goto Bucle1
+                      00111                         
+                      00112 
+                      00113 ; *********aqui puede copiar y pegar la secuencia de Led que quiera programar
+                      00114 ;********* con el mismo formato del codigo de las lineas anteriores *****
+                      00115 
+Warning[203]: Found opcode in column 1. (goto)
+0053   282F           00116 goto Bucle2 ; permanecemos en un bucle infinito
+                      00117 
+0054   1006           00118 Apagar2 bcf PORTB,Led ;Apagamos Led.-
+Warning[203]: Found opcode in column 1. (goto)
+0055   280F           00119 goto Bucle1 ; Regresamos al bucle
+                      00120 
+                      00121 ;**** Demora ****
+0056                  00122 Demora_150ms
+Warning[203]: Found opcode in column 1. (movlw)
+0056   30FF           00123 movlw 0xFF ; 02
+Warning[203]: Found opcode in column 1. (movwf)
+0057   008C           00124 movwf Contador1 ; Iniciamos contador1.-
+0058                  00125 Repeticion1
+Warning[203]: Found opcode in column 1. (movlw)
+0058   30C3           00126 movlw 0xC3 ; 01
+Warning[203]: Found opcode in column 1. (movwf)
+0059   008D           00127 movwf Contador2 ; Iniciamos contador2
+005A                  00128 Repeticion2
+Warning[203]: Found opcode in column 1. (decfsz)
+005A   0B8D           00129 decfsz Contador2,1 ; Decrementa Contador2 y si es 0 sale.- 
+MPASM  5.51                         BANDA.ASM   11-7-2017  9:56:28         PAGE  4
+
+
+LOC  OBJECT CODE     LINE SOURCE TEXT
+  VALUE
+
+Warning[203]: Found opcode in column 1. (goto)
+005B   285A           00130 goto Repeticion2 ; Si no es 0 repetimos ciclo.-
+Warning[203]: Found opcode in column 1. (decfsz)
+005C   0B8C           00131 decfsz Contador1,1 ; Decrementa Contador1.-
+Warning[203]: Found opcode in column 1. (goto)
+005D   2858           00132 goto Repeticion1 ; Si no es cero repetimos ciclo.-
+Warning[203]: Found opcode in column 1. (return)
+005E   0008           00133 return ; Regresa de la subrutina.-
+                      00134 ;******fin demora******
+                      00135 ;****Stop*****
+005F   1905           00136 stop btfsc PORTA,Pulsador3 ; Preguntamos si esta en 0 logico.-
+0060   0008           00137         return
+0061   285F           00138         goto stop
+                      00139 ;***stop****
+                      00140 
+                      00141 
+                      00142 ;****Emergencia*****
+0062                  00143 emergencia 
+0062   3008           00144             movlw b'00001000' 
+0063   0086           00145                         movwf PORTB
+0064   2056           00146                         call Demora_150ms ; Mantenemos prendido 150 milisegundos
+0065   3000           00147             movlw b'00000000' 
+0066   0086           00148                         movwf PORTB
+0067   2056           00149                         call Demora_150ms ; Mantenemos prendido 150 milisegundos
+0068   2862           00150                 goto emergencia
+                      00151 ;***fin emergencia****
+                      00152 
+Warning[205]: Found directive in column 1. (end)
+                      00153 end
+MPASM  5.51                         BANDA.ASM   11-7-2017  9:56:28         PAGE  5
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+Apagar1                           0000002D
+Apagar2                           00000054
+Bucle1                            0000000F
+Bucle2                            0000002F
+C                                 00000000
+Contador1                         0000000C
+Contador2                         0000000D
+DC                                00000001
+Demora_150ms                      00000056
+EEADR                             00000009
+EECON1                            00000088
+EECON2                            00000089
+EEDATA                            00000008
+EEIE                              00000006
+EEIF                              00000004
+F                                 00000001
+FSR                               00000004
+GIE                               00000007
+INDF                              00000000
+INTCON                            0000000B
+INTE                              00000004
+INTEDG                            00000006
+INTF                              00000001
+IRP                               00000007
+Inicio                            00000008
+Led                               00000000
+NOT_PD                            00000003
+NOT_RBPU                          00000007
+NOT_TO                            00000004
+OPTION_REG                        00000081
+PCL                               00000002
+PCLATH                            0000000A
+PORTA                             00000005
+PORTB                             00000006
+PS0                               00000000
+PS1                               00000001
+PS2                               00000002
+PSA                               00000003
+Pulsador1                         00000000
+Pulsador2                         00000001
+Pulsador3                         00000002
+Pulsador4                         00000003
+Pulsador5                         00000004
+RA0                               00000000
+RA1                               00000001
+RA2                               00000002
+RA3                               00000003
+RA4                               00000004
+RB0                               00000000
+RB1                               00000001
+RB2                               00000002
+RB3                               00000003
+RB4                               00000004
+MPASM  5.51                         BANDA.ASM   11-7-2017  9:56:28         PAGE  6
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+RB5                               00000005
+RB6                               00000006
+RB7                               00000007
+RBIE                              00000003
+RBIF                              00000000
+RD                                00000000
+RP0                               00000005
+RP1                               00000006
+Repeticion1                       00000058
+Repeticion2                       0000005A
+Reset                             00000000
+STATUS                            00000003
+Secuencia1                        00000012
+Secuencia2                        00000032
+Start                             00000005
+T0CS                              00000005
+T0IE                              00000005
+T0IF                              00000002
+T0SE                              00000004
+TMR0                              00000001
+TMR0IE                            00000005
+TMR0IF                            00000002
+TRISA                             00000085
+TRISA0                            00000000
+TRISA1                            00000001
+TRISA2                            00000002
+TRISA3                            00000003
+TRISA4                            00000004
+TRISB                             00000086
+TRISB0                            00000000
+TRISB1                            00000001
+TRISB2                            00000002
+TRISB3                            00000003
+TRISB4                            00000004
+TRISB5                            00000005
+TRISB6                            00000006
+TRISB7                            00000007
+W                                 00000000
+WR                                00000001
+WREN                              00000002
+WRERR                             00000003
+Z                                 00000002
+_CONFIG                           00002007
+_CP_OFF                           00003FFF
+_CP_ON                            0000000F
+_DEVID1                           00002006
+_FOSC_EXTRC                       00003FFF
+_FOSC_HS                          00003FFE
+_FOSC_LP                          00003FFC
+_FOSC_XT                          00003FFD
+_HS_OSC                           00003FFE
+_IDLOC0                           00002000
+_IDLOC1                           00002001
+MPASM  5.51                         BANDA.ASM   11-7-2017  9:56:28         PAGE  7
+
+
+SYMBOL TABLE
+  LABEL                             VALUE 
+
+_IDLOC2                           00002002
+_IDLOC3                           00002003
+_LP_OSC                           00003FFC
+_PWRTE_OFF                        00003FFF
+_PWRTE_ON                         00003FF7
+_RC_OSC                           00003FFF
+_WDTE_OFF                         00003FFB
+_WDTE_ON                          00003FFF
+_WDT_OFF                          00003FFB
+_WDT_ON                           00003FFF
+_XT_OSC                           00003FFD
+__16F84A                          00000001
+__DEBUG                           1
+emergencia                        00000062
+stop                              0000005F
+
+
+MEMORY USAGE MAP ('X' = Used,  '-' = Unused)
+
+0000 : X----XXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX
+0040 : XXXXXXXXXXXXXXXX XXXXXXXXXXXXXXXX XXXXXXXXX------- ----------------
+2000 : -------X-------- ---------------- ---------------- ----------------
+
+All other memory blocks unused.
+
+Program Memory Words Used:   101
+Program Memory Words Free:   923
+
+
+Errors   :     0
+Warnings :    24 reported,     0 suppressed
+Messages :     2 reported,     0 suppressed
+
+
